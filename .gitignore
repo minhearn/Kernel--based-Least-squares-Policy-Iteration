@@ -1,0 +1,4 @@
+# ignore all .jl2 and .png and .txt files
+*.jld2
+*.png
+*.txt
