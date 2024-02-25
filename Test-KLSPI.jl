@@ -51,10 +51,12 @@ function main(Params)
 
 
     AvAccLoss = zeros(NoIter)
+    AvDisLoss = zeros(NoIter)
 
     for Exp=1:NoExp
 
         AccLoss = zeros(NoIter)
+        DisLoss = zeros(NoIter)
         Na = length(torques)
         StDim = 2
         StAcDim = 10 # as StAcVec = [StVec, torques[actionIndx]/max(abs(torques))] 
@@ -183,7 +185,7 @@ function main(Params)
 
             # simulate
             s = [pi; 0.]
-            for _ in 1:SimSteps
+            for sims in 1:SimSteps
                 Qvalues = Vector{Float64}(undef, Na)
                 for aIndx=1:Na
                     StAcVec = StateAction(s, aIndx, EnvParams)
@@ -198,6 +200,7 @@ function main(Params)
                 s = s_nxt
 
                 AccLoss[Iter] += loss
+                DisLoss[Iter] += Discount^(sims-1)*loss
                 if absorb==1
                     break
                 end
@@ -209,6 +212,7 @@ function main(Params)
         end #for NoIter
 
         AvAccLoss = AvAccLoss*(Exp-1)/Exp + AccLoss/Exp
+        AvDisLoss = AvDisLoss*(Exp-1)/Exp + DisLoss/Exp
 
     end #for NoExp
 
@@ -222,7 +226,9 @@ function main(Params)
         )
 
     filename = "./KLSPI.jld2"
-    Result = Dict("AvAccLoss"=>AvAccLoss)
+    Result = Dict("AvAccLoss"=>AvAccLoss,#
+                  "AvDisLoss"=>AvDisLoss,#
+                 )
 
     #@save filename Result
     #
